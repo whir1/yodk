@@ -77,6 +77,10 @@ var identifierRegex = regexp.MustCompile("^:[a-zA-Z0-9_:.]+|^[a-zA-Z]+[a-zA-Z0-9
 
 var numberRegex = regexp.MustCompile("^[0-9]+(\\.[0-9]+)?|^\\.[0-9]+")
 
+var hexNumberRegex = regexp.MustCompile("^0x([0-9a-fA-F]+)")
+
+var scientificNumberRegex = regexp.MustCompile("(^[0-9]+(\\.[0-9]+)?|^\\.[0-9]+)e(\\d+)")
+
 var commentRegex = regexp.MustCompile("^\\/\\/([^\n]*)")
 
 var whitespaceRegex = regexp.MustCompile("^[ \\t\r]+")
@@ -313,30 +317,9 @@ func (t *Tokenizer) getStringConstant() (*Token, int) {
 	if len(t.remaining) < 2 || t.remaining[0] != '"' {
 		return nil, 0
 	}
-	escaped := false
+
 	str := ""
 	for i, b := range t.remaining[1:] {
-		if b == '\\' {
-			escaped = true
-			continue
-		}
-		if escaped {
-			switch b {
-			case 'n':
-				str += "\n"
-				escaped = false
-				continue
-			case 't':
-				str += "\t"
-				escaped = false
-				continue
-			case '"':
-				str += "\""
-				escaped = false
-				continue
-			}
-		}
-
 		if b == '"' {
 			return t.newToken(TypeString, str), i + 2
 		}
@@ -346,7 +329,20 @@ func (t *Tokenizer) getStringConstant() (*Token, int) {
 }
 
 func (t *Tokenizer) getNumberConstant() (*Token, int) {
-	found := t.NumberRegex.Find(t.remaining)
+	//hex-number
+	found := hexNumberRegex.Find(t.remaining)
+	if found != nil {
+		return t.newToken(TypeNumber, string(found)), len(found)
+	}
+
+	//scientific-number
+	found = scientificNumberRegex.Find(t.remaining)
+	if found != nil {
+		return t.newToken(TypeNumber, string(found)), len(found)
+	}
+
+	// normal number
+	found = t.NumberRegex.Find(t.remaining)
 	if found != nil {
 		return t.newToken(TypeNumber, string(found)), len(found)
 	}

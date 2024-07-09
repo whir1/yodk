@@ -30,6 +30,32 @@ const decimals = 3
 
 // FromString parses a string into a Number
 func FromString(str string) (Number, error) {
+
+	// hex number
+	if strings.HasPrefix(str, "0x") {
+		i, err := strconv.ParseInt(str, 0, 64)
+		if err != nil {
+			return Zero, err
+		}
+		return FromInt(int(i)), nil
+	}
+
+	// scientific notation
+	if strings.Contains(str, "e") {
+		parts := strings.Split(str, "e")
+		num, err := strconv.ParseFloat(parts[0], 64)
+		if err != nil {
+			return Zero, err
+		}
+		exp, err := strconv.ParseInt(parts[1], 10, 64)
+		if err != nil {
+			return Zero, err
+		}
+		result := num * math.Pow10(int(exp))
+		return FromFloat64(result), nil
+	}
+
+	// regular number
 	parts := strings.Split(str, ".")
 	switch len(parts) {
 	case 1:
@@ -166,9 +192,6 @@ func (n Number) Sqrt() Number {
 func (n Number) Mod(m Number) (Number, error) {
 	if m == Zero {
 		return Zero, fmt.Errorf("Division by 0")
-	}
-	if m < One && m > MinusOne {
-		return Zero, fmt.Errorf("The ingame-implementation thinks this is a division by 0")
 	}
 	return n % m, nil
 }

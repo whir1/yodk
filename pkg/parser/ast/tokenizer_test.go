@@ -16,9 +16,11 @@ func TestTokenizer(t *testing.T) {
 	i++
 	a = 0 and 1
 	// comment 2
-	:var = "another\"test"
+	:var = "another--test"
 	:foo = (1+2.75)*3
 	:_=1
+	hexnum=oxFE
+	scinum=1.5e2
 	`
 
 	expected := `Line: 1, Coloumn: 1, Type: Newline
@@ -101,7 +103,7 @@ func TestTokenizer(t *testing.T) {
 	Line: 9, Coloumn: 6, Type: Whitespace, Value: ' '
 	Line: 9, Coloumn: 7, Type: Symbol, Value: '='
 	Line: 9, Coloumn: 8, Type: Whitespace, Value: ' '
-	Line: 9, Coloumn: 9, Type: String, Value: 'another"test'
+	Line: 9, Coloumn: 9, Type: String, Value: 'another--test'
 	Line: 9, Coloumn: 24, Type: Newline
 	Line: 10, Coloumn: 1, Type: Whitespace, Value: '	'
 	Line: 10, Coloumn: 2, Type: ID, Value: ':foo'
@@ -122,6 +124,16 @@ func TestTokenizer(t *testing.T) {
 	Line: 11, Coloumn: 5, Type: Number, Value: '1'
 	Line: 11, Coloumn: 6, Type: Newline
 	Line: 12, Coloumn: 1, Type: Whitespace, Value: '	'
+	Line: 12, Coloumn: 2, Type: ID, Value: 'hexnum'
+	Line: 12, Coloumn: 8, Type: Symbol, Value: '='
+	Line: 12, Coloumn: 9, Type: ID, Value: 'oxFE'
+	Line: 12, Coloumn: 13, Type: Newline
+	Line: 13, Coloumn: 1, Type: Whitespace, Value: '	'
+	Line: 13, Coloumn: 2, Type: ID, Value: 'scinum'
+	Line: 13, Coloumn: 8, Type: Symbol, Value: '='
+	Line: 13, Coloumn: 9, Type: Number, Value: '1.5e2'
+	Line: 13, Coloumn: 14, Type: Newline
+	Line: 14, Coloumn: 1, Type: Whitespace, Value: '	'
 	`
 
 	tk := ast.NewTokenizer()
